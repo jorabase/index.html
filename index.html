@@ -3,38 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JoraBase Advanced OTP Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script> </head>
+    <title>JoraBase Multi-Number OTP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
 <body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
 
     <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md">
-        <h1 class="text-2xl font-bold text-blue-600 mb-6 text-center">JoraBase OTP Panel</h1>
+        <h1 class="text-2xl font-bold text-blue-600 mb-6 text-center">Multi-Number OTP Panel</h1>
 
-        <div class="text-center mb-8 border-b pb-6">
-            <p class="text-gray-600 mb-4 text-sm">প্রথমে আপনার টেলিগ্রাম দিয়ে কানেক্ট করুন:</p>
-            <script async src="https://telegram.org/js/telegram-widget.js?22" 
-                    data-telegram-login="jorabase_cloud_bot" 
-                    data-size="large" 
-                    data-onauth="onTelegramAuth(user)" 
-                    data-request-access="write"></script>
+        <div id="loginSection" class="text-center mb-8 border-b pb-6">
+            <p class="text-gray-600 mb-4 text-sm font-semibold">নতুন নম্বর দিয়ে কানেক্ট করুন:</p>
+            <div id="telegram-widget-container" class="flex justify-center">
+                <script async src="https://telegram.org/js/telegram-widget.js?22" 
+                        data-telegram-login="jorabase_cloud_bot" 
+                        data-size="large" 
+                        data-onauth="onTelegramAuth(user)" 
+                        data-request-access="write"></script>
+            </div>
         </div>
 
-        <div id="otpForm" class="space-y-4">
+        <div class="space-y-4">
             <div>
-                <label class="block text-sm font-medium text-gray-700">ইউজার সিলেক্ট করুন (Chat ID)</label>
-                <select id="userSelect" class="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                    <option value="">-- ইউজার লিস্ট --</option>
+                <label class="block text-sm font-medium text-gray-700">সিলেক্ট করুন (Saved Users)</label>
+                <select id="userSelect" class="mt-1 block w-full p-2 border border-gray-300 rounded-md bg-gray-50">
+                    <option value="">-- লিস্ট থেকে বেছে নিন --</option>
                 </select>
             </div>
 
-            <div>
-                <label class="block text-sm font-medium text-gray-700">কাস্টম কোড (ঐচ্ছিক)</label>
-                <input type="number" id="customCode" placeholder="যেমন: ১২৩৪৫৬" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
-                <p class="text-xs text-gray-400 mt-1">*ফাঁকা রাখলে অটোমেটিক ৬ ডিজিট কোড তৈরি হবে।</p>
+            <div class="flex gap-2">
+                <button onclick="logout()" class="flex-1 bg-red-500 text-white py-2 rounded-lg text-sm font-medium hover:bg-red-600 transition">
+                    Logout (New Login)
+                </button>
+                <button onclick="clearList()" class="flex-1 bg-gray-500 text-white py-2 rounded-lg text-sm font-medium hover:bg-gray-600 transition">
+                    Clear List
+                </button>
             </div>
 
-            <button onclick="sendOTP()" class="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition">
-                কোড পাঠান (Send OTP)
+            <hr class="my-4">
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">OTP কোড লিখুন</label>
+                <input type="number" id="customCode" placeholder="যেমন: ৫৬৪৮৯০" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+            </div>
+
+            <button onclick="sendOTP()" class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 shadow-lg transition">
+                কোড পাঠান 🚀
             </button>
         </div>
 
@@ -45,67 +58,73 @@
         const BOT_TOKEN = '8786940632:AAHNTYfESdpDBi-QEmIS1X86cc9e9DqgdJg';
         let registeredUsers = JSON.parse(localStorage.getItem('jorabase_users')) || [];
 
-        // ইউজার লিস্ট ড্রপডাউন আপডেট করা
         function updateDropdown() {
             const select = document.getElementById('userSelect');
-            select.innerHTML = '<option value="">-- ইউজার লিস্ট --</option>';
+            select.innerHTML = '<option value="">-- লিস্ট থেকে বেছে নিন --</option>';
             registeredUsers.forEach(user => {
                 const option = document.createElement('option');
                 option.value = user.id;
-                option.textContent = `${user.first_name} (ID: ${user.id})`;
+                option.textContent = `${user.first_name} (${user.id})`;
                 select.appendChild(option);
             });
         }
 
-        // টেলিগ্রাম লগইন হওয়ার পর
         function onTelegramAuth(user) {
-            // যদি ইউজার নতুন হয় তবে লিস্টে যোগ করা
             if (!registeredUsers.some(u => u.id === user.id)) {
                 registeredUsers.push(user);
                 localStorage.setItem('jorabase_users', JSON.stringify(registeredUsers));
             }
             updateDropdown();
-            alert(`স্বাগতম ${user.first_name}! আপনি এখন লিস্ট থেকে নিজেকে সিলেক্ট করে টেস্ট করতে পারবেন।`);
+            document.getElementById('status').innerText = "সফলভাবে কানেক্ট হয়েছে!";
+            document.getElementById('status').className = "mt-4 text-center text-green-600";
         }
 
-        // ওটিপি পাঠানো
+        // লগআউট ফাংশন: এটি ব্রাউজার থেকে টেলিগ্রামের সেশন ক্লিয়ার করার চেষ্টা করবে
+        function logout() {
+            // ১. লোকাল স্টোরেজ থেকে কারেন্ট ইউজার ডাটা ডিলিট করার দরকার নেই (যাতে লিস্ট থাকে)
+            // ২. কিন্তু টেলিগ্রামের লগইন সেশন ক্লিয়ার করতে পেজ রিলোড করে কুকি সরাতে হয়
+            if(confirm("আপনি কি নতুন নম্বর দিয়ে লগইন করতে চান?")){
+                // টেলিগ্রাম উইজেট সেশন ক্লিয়ার করার জন্য পেজ হার্ড রিফ্রেশ
+                location.reload(); 
+            }
+        }
+
+        function clearList() {
+            if(confirm("সব সেভ করা আইডি মুছে ফেলবেন?")){
+                localStorage.removeItem('jorabase_users');
+                registeredUsers = [];
+                updateDropdown();
+            }
+        }
+
         async function sendOTP() {
             const userId = document.getElementById('userSelect').value;
             let otp = document.getElementById('customCode').value;
             const statusDiv = document.getElementById('status');
 
             if (!userId) {
-                alert("দয়া করে একজন ইউজার সিলেক্ট করুন!");
+                alert("লিস্ট থেকে আগে আইডি সিলেক্ট করুন!");
                 return;
             }
 
-            if (!otp) {
-                otp = Math.floor(100000 + Math.random() * 900000); // অটো জেনারেট
-            }
+            if (!otp) otp = Math.floor(100000 + Math.random() * 900000);
 
-            statusDiv.textContent = "কোড পাঠানো হচ্ছে...";
-            statusDiv.className = "mt-4 text-center text-blue-500";
-
-            const message = `🔐 JoraBase Verification\n\nআপনার সিকিউরিটি কোডটি হলো: ${otp}\n\nএটি কারো সাথে শেয়ার করবেন না।`;
+            statusDiv.textContent = "পাঠানো হচ্ছে...";
+            const message = `🔐 JoraBase Code: ${otp}`;
             const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${userId}&text=${encodeURIComponent(message)}`;
 
             try {
                 const response = await fetch(url);
                 const data = await response.json();
-                
                 if (data.ok) {
-                    statusDiv.textContent = `সফল! ${userId} আইডিতে ${otp} পাঠানো হয়েছে।`;
-                    statusDiv.className = "mt-4 text-center text-green-600";
+                    statusDiv.textContent = `সফল! আইডি ${userId}-এ কোড ${otp} গেছে।`;
+                    statusDiv.className = "mt-4 text-center text-green-600 font-bold";
                 } else {
-                    throw new Error(data.description);
+                    alert("মেসেজ যায়নি! ইউজার কি বট ব্লক করেছে?");
                 }
-            } catch (error) {
-                statusDiv.textContent = "Error: " + error.message;
-                statusDiv.className = "mt-4 text-center text-red-600";
-            }
+            } catch (e) { console.error(e); }
         }
 
-        // পেজ লোড হলে ড্রপডাউন লোড করা
         updateDropdown();
     </script>
 </body>
