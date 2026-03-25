@@ -3,129 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JoraBase Smart Number-to-ID</title>
+    <title>JoraBase Auto Sync OTP</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center p-6">
+<body class="bg-slate-900 text-white min-h-screen flex items-center justify-center p-6">
 
-    <div class="bg-gray-800 p-8 rounded-3xl shadow-2xl w-full max-w-md border border-gray-700">
-        <h1 class="text-2xl font-black text-center text-cyan-400 mb-6 uppercase tracking-tighter">Smart OTP Sync 🚀</h1>
+    <div class="bg-slate-800 p-8 rounded-3xl shadow-2xl w-full max-w-md border border-slate-700">
+        <h1 class="text-2xl font-black text-center text-emerald-400 mb-6 uppercase">JoraBase OTP Pro 🚀</h1>
 
-        <div class="bg-gray-700/50 p-4 rounded-2xl mb-6 border border-gray-600">
-            <p class="text-[11px] font-bold text-gray-400 mb-3 uppercase tracking-widest text-center">নতুন নম্বর ডাটাবেসে যোগ করুন</p>
-            <div class="flex justify-center">
+        <div class="bg-slate-700/50 p-5 rounded-2xl mb-6 border border-slate-600">
+            <p class="text-[12px] font-bold text-slate-300 mb-3 text-center">১. নতুন নম্বর হলে আগে লগইন করুন</p>
+            
+            <div class="flex justify-center mb-3">
                 <script async src="https://telegram.org/js/telegram-widget.js?22" 
                         data-telegram-login="jorabase_cloud_bot" 
                         data-size="large" 
                         data-onauth="onTelegramAuth(user)" 
                         data-request-access="write"></script>
             </div>
-            <button onclick="forceLogout()" class="w-full mt-3 text-[10px] bg-red-500/10 text-red-400 py-1 rounded-lg border border-red-500/20 hover:bg-red-500 hover:text-white transition">Account Switch (Logout)</button>
+
+            <button onclick="disconnectSession()" class="w-full bg-red-500/20 text-red-400 py-2 rounded-xl text-sm font-bold border border-red-500/30 hover:bg-red-500 hover:text-white transition">
+                নতুন একাউন্ট যোগ করতে Disconnect করুন
+            </button>
         </div>
 
         <div class="space-y-4">
+            <h2 class="text-[12px] font-bold text-slate-300 uppercase mb-2">২. নম্বর দিয়ে কোড পাঠান</h2>
+            
             <div>
-                <label class="block text-xs font-bold text-gray-400 mb-2 uppercase">ফোন নম্বর লিখুন</label>
-                <input type="text" id="targetPhone" placeholder="যেমন: 017XXXXXXXX" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-cyan-500">
-                <p id="matchStatus" class="text-[10px] mt-1 text-gray-500 italic">নম্বরটি টাইপ করলে ডাটাবেসে খোঁজা হবে...</p>
+                <label class="block text-xs font-bold text-slate-400 mb-1">ফোন নম্বর</label>
+                <input type="text" id="phoneInput" onkeyup="checkDatabase()" placeholder="যেমন: 017XXXXXXXX" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-emerald-500 text-white">
+                <p id="matchStatus" class="text-[11px] mt-1 text-slate-500 italic">নম্বর টাইপ করুন...</p>
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-gray-400 mb-2 uppercase">ওটিপি কোড (OTP)</label>
-                <input type="number" id="otpCode" placeholder="যেমন: 123456" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-cyan-500">
+                <label class="block text-xs font-bold text-slate-400 mb-1">ওটিপি কোড (OTP)</label>
+                <div class="flex gap-2">
+                    <input type="number" id="otpCode" placeholder="যেমন: 123456" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-emerald-500 text-white">
+                    <button onclick="generateRandom()" class="bg-slate-700 px-4 rounded-xl hover:bg-slate-600 transition" title="Auto Generate">🎲</button>
+                </div>
             </div>
 
-            <button onclick="sendByPhone()" class="w-full bg-cyan-600 py-4 rounded-2xl font-black text-lg shadow-lg hover:bg-cyan-500 active:scale-95 transition">
+            <button onclick="sendOTP()" class="w-full bg-emerald-600 py-4 rounded-2xl font-black text-lg shadow-lg hover:bg-emerald-500 transition">
                 কোড পাঠান 🚀
             </button>
         </div>
 
-        <div id="status" class="mt-6 text-center text-sm font-bold hidden p-3 rounded-xl border"></div>
+        <div id="statusMsg" class="mt-6 text-center text-sm font-bold hidden p-3 rounded-xl border"></div>
         
-        <div class="mt-6 pt-4 border-t border-gray-700 text-center">
-            <p class="text-[10px] text-gray-500">ডাটাবেসে সেভ করা নম্বর: <span id="dbCount" class="text-cyan-400">0</span>টি</p>
+        <div class="mt-6 pt-4 border-t border-slate-700 text-center flex justify-between px-2">
+            <p class="text-[11px] text-slate-400">ডাটাবেসে নম্বর আছে: <span id="dbCount" class="text-emerald-400 font-bold">0</span>টি</p>
+            <button onclick="viewSavedNumbers()" class="text-[11px] text-blue-400 hover:underline">লিস্ট দেখুন</button>
         </div>
     </div>
 
     <script>
         const BOT_TOKEN = '8786940632:AAHNTYfESdpDBi-QEmIS1X86cc9e9DqgdJg';
-        let phoneDB = JSON.parse(localStorage.getItem('phone_to_id_db')) || [];
+        const BOT_USERNAME = 'jorabase_cloud_bot';
+        let phoneDatabase = JSON.parse(localStorage.getItem('jorabase_phone_db')) || [];
 
-        // ১. ডাটাবেস আপডেট ও নম্বর ম্যাচিং
+        // ১. ডাটাবেসের অবস্থা আপডেট করা
         function updateStats() {
-            document.getElementById('dbCount').innerText = phoneDB.length;
+            document.getElementById('dbCount').innerText = phoneDatabase.length;
         }
 
-        document.getElementById('targetPhone').addEventListener('input', function(e) {
-            const phone = e.target.value.trim();
-            const match = phoneDB.find(u => u.username === phone || u.first_name === phone);
+        // ২. ইউজার লগইন করলে নম্বর ইনপুট নিয়ে সেভ করা
+        function onTelegramAuth(user) {
+            // লগইন হওয়ার সাথে সাথে ফোন নম্বর চাইবে
+            let phoneNumber = prompt(`স্বাগতম ${user.first_name}! ডাটাবেসে সেভ করার জন্য আপনার ফোন নম্বরটি লিখুন:\n(যাতে পরবর্তীতে শুধু নম্বর দিলেই মেসেজ যায়)`);
+            
+            if (phoneNumber && phoneNumber.trim() !== "") {
+                phoneNumber = phoneNumber.trim();
+                // নম্বরটি আগে থেকে থাকলে আপডেট করবে, না থাকলে নতুন সেভ করবে
+                let existingIndex = phoneDatabase.findIndex(u => u.phone === phoneNumber);
+                
+                if (existingIndex !== -1) {
+                    phoneDatabase[existingIndex].id = user.id; // আইডি আপডেট
+                } else {
+                    phoneDatabase.push({ phone: phoneNumber, id: user.id, name: user.first_name });
+                }
+                
+                localStorage.setItem('jorabase_phone_db', JSON.stringify(phoneDatabase));
+                
+                document.getElementById('phoneInput').value = phoneNumber;
+                checkDatabase();
+                alert(`সফল! ${phoneNumber} নম্বরটি ডাটাবেসে সেভ হয়েছে। এখন আপনি সরাসরি কোড পাঠাতে পারবেন।`);
+                updateStats();
+            } else {
+                alert("আপনি ফোন নম্বর দেননি, তাই ডাটাবেসে সেভ হয়নি!");
+            }
+        }
+
+        // ৩. নম্বর টাইপ করার সাথে সাথে ডাটাবেস চেক করা
+        function checkDatabase() {
+            const inputPhone = document.getElementById('phoneInput').value.trim();
             const statusBox = document.getElementById('matchStatus');
             
-            if (match) {
-                statusBox.innerText = `✅ ডাটাবেসে পাওয়া গেছে! (Chat ID: ${match.id})`;
-                statusBox.className = "text-[10px] mt-1 text-green-400 italic";
-            } else {
-                statusBox.innerText = "❌ ডাটাবেসে নেই! আগে একবার লগইন করে নিতে হবে।";
-                statusBox.className = "text-[10px] mt-1 text-red-400 italic";
-            }
-        });
-
-        // ২. লগইন করলে নম্বর ও আইডি সেভ হবে
-        function onTelegramAuth(user) {
-            // ফোন নম্বর সরাসরি উইজেট দেয় না, তাই আমরা ইউজারের 'Username' বা 'First Name' কে নম্বর হিসেবে সেভ করার অপশন দিচ্ছি
-            // মনে রাখবেন: যদি ইউজার টেলিগ্রামে তার ইউজারনেম হিসেবে ফোন নম্বর রাখে তবেই এটি সহজ হবে।
-            // তবে বেস্ট হয় আপনি লগইন করার পর একটি পপআপে তার ফোন নম্বরটি একবার ইনপুট নিয়ে নিলে।
-            
-            let phone = prompt(`স্বাগতম ${user.first_name}! আপনার ফোন নম্বরটি লিখুন (পরবর্তীতে এই নম্বর দিয়েই কোড পাঠাতে পারবেন):`);
-            
-            if (phone) {
-                if (!phoneDB.some(u => u.phone === phone)) {
-                    phoneDB.push({ id: user.id, phone: phone, name: user.first_name });
-                    localStorage.setItem('phone_to_id_db', JSON.stringify(phoneDB));
-                    alert("ডাটাবেসে নম্বর সেভ হয়েছে!");
-                }
-            }
-            updateStats();
-        }
-
-        // ৩. নম্বর দিয়ে ওটিপি পাঠানো
-        async function sendByPhone() {
-            const inputPhone = document.getElementById('targetPhone').value.trim();
-            const otp = document.getElementById('otpCode').value || Math.floor(100000 + Math.random() * 900000);
-            const statusDiv = document.getElementById('status');
-
-            const targetUser = phoneDB.find(u => u.phone === inputPhone);
-
-            if (!targetUser) {
-                showStatus("এই নম্বরটি ডাটাবেসে নেই! আগে লগইন করুন।", "red");
+            if(inputPhone.length < 3) {
+                statusBox.innerText = "নম্বর টাইপ করুন...";
+                statusBox.className = "text-[11px] mt-1 text-slate-500 italic";
                 return;
             }
 
+            const match = phoneDatabase.find(u => u.phone === inputPhone);
+            
+            if (match) {
+                statusBox.innerText = `✅ ডাটাবেসে পাওয়া গেছে! (${match.name})`;
+                statusBox.className = "text-[11px] mt-1 text-emerald-400 font-bold";
+            } else {
+                statusBox.innerText = "❌ ডাটাবেসে নেই! আগে একবার উপরে লগইন করুন।";
+                statusBox.className = "text-[11px] mt-1 text-red-400 italic";
+            }
+        }
+
+        // ৪. শুধু নম্বর দিয়ে ওটিপি পাঠানো
+        async function sendOTP() {
+            const phone = document.getElementById('phoneInput').value.trim();
+            let otp = document.getElementById('otpCode').value;
+            
+            if (!phone) return showStatus("আগে একটি ফোন নম্বর লিখুন!", "amber");
+            
+            const targetUser = phoneDatabase.find(u => u.phone === phone);
+            if (!targetUser) {
+                showStatus("এই নম্বরটি ডাটাবেসে নেই! দয়া করে আগে লগইন করে নম্বরটি এড করুন।", "red");
+                return;
+            }
+
+            if (!otp) otp = Math.floor(100000 + Math.random() * 900000);
+
             showStatus("পাঠানো হচ্ছে...", "blue");
 
-            const text = `🔐 ভেরিফিকেশন কোড: ${otp}`;
-            const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${targetUser.id}&text=${encodeURIComponent(text)}`;
+            const msgText = `🔐 *JoraBase Verification*\n\nআপনার ওটিপি কোড: \`${otp}\`\n\nএটি কারো সাথে শেয়ার করবেন না।`;
+            const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${targetUser.id}&text=${encodeURIComponent(msgText)}&parse_mode=Markdown`;
 
             try {
                 const res = await fetch(url);
                 const data = await res.json();
                 if(data.ok) {
-                    showStatus(`সফল! ${targetUser.phone} নম্বরে কোড গেছে।`, "green");
+                    showStatus(`সাফল্য! ${phone} নম্বরে কোড পাঠানো হয়েছে।`, "emerald");
                 } else {
-                    showStatus("ব্যর্থ! ইউজার বট ব্লক করেছে।", "red");
+                    showStatus("Error! ইউজার কি বট ব্লক করেছে?", "red");
                 }
-            } catch (e) { showStatus("ইন্টারনেট সমস্যা!", "red"); }
+            } catch (err) { showStatus("ইন্টারনেট সমস্যা!", "red"); }
         }
 
-        function forceLogout() {
-            window.open(`https://oauth.telegram.org/auth?bot=jorabase_cloud_bot&origin=https%3A%2F%2Fjorabase.github.io&embed=1`, "Logout", "width=400,height=500");
-            setTimeout(() => location.reload(), 2000);
+        // ৫. ডিসকানেক্ট পপ-আপ (নতুন নম্বরের জন্য)
+        function disconnectSession() {
+            if(confirm("নতুন একাউন্ট লগইন করার জন্য বর্তমান সেশন ডিসকানেক্ট করতে হবে। আমি কি পপ-আপ ওপেন করব?")) {
+                const logoutUrl = `https://oauth.telegram.org/auth?bot=${BOT_USERNAME}&origin=${encodeURIComponent(window.location.origin)}&embed=1`;
+                
+                const w = 400, h = 550;
+                const l = (screen.width/2)-(w/2), t = (screen.height/2)-(h/2);
+                window.open(logoutUrl, "LogoutWindow", `width=${w},height=${h},top=${t},left=${l}`);
+                
+                showStatus("পপ-আপ থেকে Disconnect করে পেজটি রিফ্রেশ দিন!", "amber");
+            }
+        }
+
+        // ইউটিলিটি ফাংশন
+        function generateRandom() {
+            document.getElementById('otpCode').value = Math.floor(100000 + Math.random() * 900000);
         }
 
         function showStatus(msg, color) {
-            const s = document.getElementById('status');
+            const s = document.getElementById('statusMsg');
             s.innerText = msg;
-            s.className = `mt-6 text-center text-sm font-bold block p-3 rounded-xl border border-${color}-500 bg-${color}-500/10 text-${color}-400`;
+            s.className = `mt-6 text-center text-sm font-bold block p-3 rounded-xl border border-${color}-500/50 bg-${color}-500/10 text-${color}-400`;
+        }
+
+        function viewSavedNumbers() {
+            if(phoneDatabase.length === 0) return alert("ডাটাবেস একদম ফাঁকা!");
+            let list = "সেভ করা নম্বরসমূহ:\n\n";
+            phoneDatabase.forEach(u => list += `📞 ${u.phone} (${u.name})\n`);
+            alert(list);
         }
 
         updateStats();
