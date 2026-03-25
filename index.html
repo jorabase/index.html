@@ -3,132 +3,166 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JoraBase Unlimited OTP Panel</title>
+    <title>JoraBase Ultimate OTP Panel</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .btn-grad { background-image: linear-gradient(to right, #1FA2FF 0%, #12D8FA 51%, #1FA2FF 100%); transition: 0.5s; background-size: 200% auto; }
-        .btn-grad:hover { background-position: right center; }
+        body { background: #0f172a; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .btn-primary { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); transition: 0.3s; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4); }
     </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center p-4">
+<body class="min-h-screen flex items-center justify-center p-6">
 
-    <div class="bg-gray-800 p-6 rounded-2xl shadow-2xl w-full max-w-md border border-gray-700">
-        <h1 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300 mb-6 text-center">JoraBase OTP Pro</h1>
+    <div class="glass p-8 rounded-3xl shadow-2xl w-full max-w-lg">
+        <h1 class="text-3xl font-black text-center bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent mb-8">
+            JORABASE OTP PRO 🚀
+        </h1>
 
-        <div class="bg-gray-700 p-4 rounded-xl mb-6">
-            <p class="text-sm text-gray-300 mb-3 text-center">নতুন নম্বর এড করতে নিচের বাটনে ক্লিক করুন:</p>
-            <div class="flex justify-center" id="widget-container">
-                <script async src="https://telegram.org/js/telegram-widget.js?22" 
-                        data-telegram-login="jorabase_cloud_bot" 
-                        data-size="large" 
-                        data-onauth="onTelegramAuth(user)" 
-                        data-request-access="write"></script>
+        <div class="mb-8 p-5 bg-slate-800/50 rounded-2xl border border-slate-700">
+            <h2 class="text-sm font-bold text-slate-400 uppercase mb-4 tracking-widest">১. একাউন্ট কানেক্ট করুন</h2>
+            <div class="flex flex-col items-center gap-4">
+                <div id="telegram-login-container">
+                    <script async src="https://telegram.org/js/telegram-widget.js?22" 
+                            data-telegram-login="jorabase_cloud_bot" 
+                            data-size="large" 
+                            data-onauth="onTelegramAuth(user)" 
+                            data-request-access="write"></script>
+                </div>
+                
+                <div class="flex gap-2 w-full">
+                    <button onclick="forceDisconnect()" class="flex-1 bg-red-500/20 text-red-400 border border-red-500/50 py-2 rounded-xl text-xs font-bold hover:bg-red-500 hover:text-white transition">
+                        নতুন নম্বর (LOGOUT)
+                    </button>
+                    <button onclick="location.reload()" class="flex-1 bg-slate-700 text-slate-300 py-2 rounded-xl text-xs font-bold hover:bg-slate-600 transition">
+                        পেজ রিফ্রেশ 🔄
+                    </button>
+                </div>
             </div>
-            <p class="text-[10px] text-gray-400 mt-2 text-center">*নতুন নম্বর এড করতে ইনকগনিটো মোড বা অন্য ব্রাউজার ব্যবহার করা ভালো।</p>
         </div>
 
-        <div class="space-y-5">
+        <div class="space-y-6">
+            <h2 class="text-sm font-bold text-slate-400 uppercase tracking-widest">২. ওটিপি টেস্টিং প্যানেল</h2>
+            
             <div>
-                <label class="block text-xs font-bold uppercase text-gray-400 mb-1">প্রাপক সিলেক্ট করুন (Saved Numbers)</label>
-                <select id="userSelect" class="w-full bg-gray-900 border border-gray-600 rounded-lg p-3 text-white focus:ring-2 focus:ring-blue-500 outline-none">
-                    </select>
+                <label class="block text-xs font-medium mb-2 text-slate-300">প্রাপক (Saved User List)</label>
+                <select id="userSelect" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">লোডিং হচ্ছে...</option>
+                </select>
             </div>
 
             <div>
-                <label class="block text-xs font-bold uppercase text-gray-400 mb-1">ওটিপি কোড (OTP)</label>
+                <label class="block text-xs font-medium mb-2 text-slate-300">ভেরিফিকেশন কোড (Custom Code)</label>
                 <div class="flex gap-2">
-                    <input type="number" id="customCode" placeholder="যেমন: ৮৮৯৯০০" class="flex-1 bg-gray-900 border border-gray-600 rounded-lg p-3 outline-none focus:ring-2 focus:ring-blue-500">
-                    <button onclick="generateRandom()" class="bg-gray-600 px-3 rounded-lg hover:bg-gray-500">🔄</button>
+                    <input type="number" id="otpCode" placeholder="যেমন: 778899" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl p-3 outline-none focus:ring-2 focus:ring-blue-500">
+                    <button onclick="generateOTP()" class="bg-slate-700 px-4 rounded-xl hover:bg-slate-600 transition">🎲</button>
                 </div>
             </div>
 
-            <button onclick="sendOTP()" class="w-full btn-grad py-4 rounded-xl font-bold text-lg shadow-lg transform active:scale-95 transition">
-                কোড পাঠান 🚀
+            <button onclick="sendOTP()" class="w-full btn-primary py-4 rounded-2xl font-black text-lg tracking-wide shadow-lg">
+                কোড পাঠান (SEND OTP) ✈️
             </button>
         </div>
 
-        <div id="status" class="mt-5 text-center text-sm font-medium p-2 rounded hidden"></div>
+        <div id="status" class="mt-6 p-3 rounded-xl text-center text-sm font-bold hidden border"></div>
 
-        <div class="mt-8 pt-4 border-t border-gray-700 flex justify-between text-[11px]">
-            <button onclick="exportData()" class="text-blue-400 hover:underline">ব্যাকআপ নিন</button>
-            <button onclick="clearAllData()" class="text-red-400 hover:underline">সব ডিলিট করুন</button>
+        <div class="mt-10 pt-6 border-t border-slate-800 flex justify-between">
+            <button onclick="clearDatabase()" class="text-[10px] text-red-500 hover:underline uppercase font-bold tracking-tighter">Database Clear</button>
+            <p class="text-[10px] text-slate-500 font-mono">Build: 2026.03.25</p>
         </div>
     </div>
 
     <script>
         const BOT_TOKEN = '8786940632:AAHNTYfESdpDBi-QEmIS1X86cc9e9DqgdJg';
-        let userDatabase = JSON.parse(localStorage.getItem('otp_users')) || [];
+        const BOT_USER = 'jorabase_cloud_bot';
+        let userDB = JSON.parse(localStorage.getItem('jora_db')) || [];
 
-        function updateUI() {
+        // ১. ডাটাবেস এবং ইউআই আপডেট করা
+        function updateList() {
             const select = document.getElementById('userSelect');
-            select.innerHTML = userDatabase.length ? '' : '<option value="">কোনো নম্বর এড করা নেই</option>';
-            userDatabase.forEach(user => {
-                const option = document.createElement('option');
-                option.value = user.id;
-                option.textContent = `${user.first_name} (ID: ${user.id})`;
-                select.appendChild(option);
+            select.innerHTML = userDB.length ? '' : '<option value="">আগে নম্বর এড করুন</option>';
+            userDB.forEach(user => {
+                const opt = document.createElement('option');
+                opt.value = user.id;
+                opt.textContent = `${user.first_name} [ID: ${user.id}]`;
+                select.appendChild(opt);
             });
         }
 
+        // ২. টেলিগ্রাম অথরাইজেশন হ্যান্ডলার
         function onTelegramAuth(user) {
-            if (!userDatabase.some(u => u.id === user.id)) {
-                userDatabase.push({ id: user.id, first_name: user.first_name });
-                localStorage.setItem('otp_users', JSON.stringify(userDatabase));
-                showStatus(`সফল! ${user.first_name} লিস্টে এড হয়েছে।`, 'green');
+            if (!userDB.some(u => u.id === user.id)) {
+                userDB.push({ id: user.id, first_name: user.first_name });
+                localStorage.setItem('jora_db', JSON.stringify(userDB));
+                showStatus(`নতুন ইউজার এড হয়েছে: ${user.first_name}`, 'emerald');
             } else {
-                showStatus(`এই নম্বরটি অলরেডি লিস্টে আছে!`, 'yellow');
+                showStatus(`স্বাগতম ফিরে আসার জন্য, ${user.first_name}!`, 'blue');
             }
-            updateUI();
+            updateList();
         }
 
+        // ৩. ওটিপি পাঠানোর ফাংশন
         async function sendOTP() {
-            const userId = document.getElementById('userSelect').value;
-            let otp = document.getElementById('customCode').value;
+            const id = document.getElementById('userSelect').value;
+            let code = document.getElementById('otpCode').value;
             
-            if (!userId) return showStatus("আগে একটি নম্বর সিলেক্ট করুন!", "red");
-            if (!otp) otp = Math.floor(100000 + Math.random() * 900000);
+            if (!id) return showStatus("দয়া করে একজন ইউজার সিলেক্ট করুন!", "amber");
+            if (!code) code = Math.floor(100000 + Math.random() * 900000);
 
-            showStatus("পাঠানো হচ্ছে...", "blue");
+            showStatus("প্রসেসিং...", "blue");
 
-            const msg = `🔐 JoraBase Cloud Verification\n\nআপনার ওটিপি কোড: ${otp}\n\nএটি গোপনীয় রাখুন।`;
-            const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${userId}&text=${encodeURIComponent(msg)}`;
+            const text = `🔐 *JoraBase Verification Code*\n\nআপনার কোডটি হলো: \`${code}\`\n\nএটি কারো সাথে শেয়ার করবেন না।`;
+            const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${id}&text=${encodeURIComponent(text)}&parse_mode=Markdown`;
 
             try {
                 const res = await fetch(url);
                 const data = await res.json();
-                if (data.ok) {
-                    showStatus(`সাফল্য! আইডি ${userId}-এ ${otp} কোডটি গেছে।`, "green");
+                if(data.ok) {
+                    showStatus(`সাফল্য! আইডি ${id}-এ কোড ${code} পাঠানো হয়েছে।`, 'emerald');
                 } else {
-                    showStatus("মেসেজ যায়নি। ইউজার কি বট ব্লক করেছে?", "red");
+                    showStatus("Error: মেসেজ যায়নি। ইউজারকে বট স্টার্ট করতে বলুন।", "red");
                 }
-            } catch (e) { showStatus("ইন্টারনেট সমস্যা!", "red"); }
+            } catch (err) {
+                showStatus("নেটওয়ার্ক এরর! চেক করুন।", "red");
+            }
         }
 
-        function generateRandom() {
-            document.getElementById('customCode').value = Math.floor(100000 + Math.random() * 900000);
+        // ৪. স্মার্ট ডিসকানেক্ট পপ-আপ
+        function forceDisconnect() {
+            if(confirm("নতুন নম্বর এড করতে আপনাকে টেলিগ্রাম সেশন থেকে ডিসকানেক্ট হতে হবে। আমি কি নতুন উইন্ডো খুলব?")) {
+                const url = `https://oauth.telegram.org/auth?bot=${BOT_USER}&origin=https%3A%2F%2Fjorabase.github.io&embed=1`;
+                const w = 450, h = 600;
+                const l = (window.screen.width/2)-(w/2), t = (window.screen.height/2)-(h/2);
+                
+                window.open(url, "TLogout", `width=${w},height=${h},top=${t},left=${l}`);
+                
+                showStatus("পপ-আপে 'Disconnect' করে পেজ রিফ্রেশ দিন।", "amber");
+            }
+        }
+
+        // ৫. ইউটিলিটি ফাংশনস
+        function generateOTP() {
+            document.getElementById('otpCode').value = Math.floor(100000 + Math.random() * 900000);
         }
 
         function showStatus(msg, color) {
             const s = document.getElementById('status');
             s.innerText = msg;
-            s.className = `mt-5 text-center text-sm font-medium p-2 rounded block bg-${color}-900/50 text-${color}-400 border border-${color}-700`;
             s.classList.remove('hidden');
+            s.className = `mt-6 p-3 rounded-xl text-center text-sm font-bold block bg-${color}-500/10 text-${color}-400 border-${color}-500/30`;
         }
 
-        function clearAllData() {
-            if(confirm("সব সেভ করা নম্বর মুছে ফেলবেন?")) {
-                localStorage.removeItem('otp_users');
-                userDatabase = [];
-                updateUI();
+        function clearDatabase() {
+            if(confirm("সব ডাটা মুছে ফেলবেন?")) {
+                localStorage.removeItem('jora_db');
+                userDB = [];
+                updateList();
+                showStatus("ডাটাবেস ক্লিয়ার করা হয়েছে।", "red");
             }
         }
 
-        function exportData() {
-            alert("আপনার সেভ করা ইউজার সংখ্যা: " + userDatabase.length);
-            console.log(userDatabase);
-        }
-
-        updateUI();
+        // ইনিশিয়াল লোড
+        updateList();
     </script>
 </body>
-</html>
+</html> 
