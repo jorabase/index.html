@@ -1,108 +1,47 @@
 <!DOCTYPE html>
-<html>
+<html lang="bn">
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    body { font-family: Arial, sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-    .login-box { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); width: 100%; max-width: 350px; text-align: center; }
-    input { width: 90%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
-    button { width: 100%; padding: 10px; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; color: white; margin-top: 10px; }
-    .btn-send { background-color: #0088cc; } /* Telegram Blue */
-    .btn-verify { background-color: #28a745; } /* Success Green */
-    #status { margin-top: 15px; font-weight: bold; font-size: 14px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JoraBase Cloud OTP</title>
 </head>
 <body>
 
-<div class="login-box">
-  <h2 style="color: #333;">🔐 Secure Login</h2>
-  <p style="color: #666; font-size: 14px;">Enter your Telegram ID to receive an OTP.</p>
-
-  <div id="step1">
-    <input type="text" id="contactId" placeholder="e.g. 7270030240">
-    <button class="btn-send" onclick="sendOTP()">Send OTP</button>
-  </div>
-
-  <div id="step2" style="display: none;">
-    <input type="number" id="otpCode" placeholder="Enter 6-digit OTP">
-    <button class="btn-verify" onclick="verifyOTP()">Verify & Login</button>
-  </div>
-
-  <p id="status"></p>
-</div>
-
-<script>
-  const apiUrl = "https://jorabase.jorabase.workers.dev"; // আপনার API লিংক
-  let currentContactId = "";
-
-  // OTP পাঠানোর ফাংশন
-  async function sendOTP() {
-    const contactInput = document.getElementById('contactId').value;
-    const statusText = document.getElementById('status');
-
-    if (!contactInput) {
-      statusText.innerText = "❌ Please enter your Telegram ID!";
-      statusText.style.color = "red";
-      return;
-    }
-
-    statusText.innerText = "⏳ Sending OTP...";
-    statusText.style.color = "blue";
-
-    try {
-      const response = await fetch(`${apiUrl}/send-otp`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contact_id: contactInput, platform: "telegram" })
-      });
-      const result = await response.json();
-      
-      if(result.success) {
-        currentContactId = contactInput;
-        statusText.innerText = "✅ OTP Sent! Check your Telegram.";
-        statusText.style.color = "green";
+    <div style="text-align: center; margin-top: 50px;">
+        <h2>টেলিগ্রাম দিয়ে লগইন করে OTP নিন</h2>
         
-        // Step 1 লুকিয়ে Step 2 (OTP বক্স) দেখানো
-        document.getElementById('step1').style.display = "none";
-        document.getElementById('step2').style.display = "block";
-      } else {
-        statusText.innerText = "❌ Error: " + result.error;
-        statusText.style.color = "red";
+        <script async src="https://telegram.org/js/telegram-widget.js?22" 
+                data-telegram-login="jorabase_cloud_bot" 
+                data-size="large" 
+                data-onauth="onTelegramAuth(user)" 
+                data-request-access="write"></script>
+    </div>
+
+    <script type="text/javascript">
+      function onTelegramAuth(user) {
+        // লগইন সফল হলে ইউজারের আইডি কনসোলে দেখাবে
+        console.log(user);
+        alert('লগইন সফল! আপনার আইডি: ' + user.id);
+
+        // এখন একটি টেস্ট মেসেজ (OTP) পাঠানো যাক
+        const botToken = '8786940632:AAHNTYfESdpDBi-QEmIS1X86cc9e9DqgdJg';
+        const otp = Math.floor(100000 + Math.random() * 900000); // ৬ ডিজিট ওটিপি
+        
+        const message = `আপনার ভেরিফিকেশন কোড হলো: ${otp}`;
+        const url = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${user.id}&text=${encodeURIComponent(message)}`;
+
+        fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                if(data.ok) {
+                    alert('আপনার টেলিগ্রামে একটি ওটিপি পাঠানো হয়েছে!');
+                } else {
+                    alert('মেসেজ পাঠাতে সমস্যা হয়েছে।');
+                }
+            })
+            .catch(err => console.error(err));
       }
-    } catch (error) { statusText.innerText = "❌ System Error!"; statusText.style.color = "red"; }
-  }
-
-  // OTP ভেরিফাই করার ফাংশন
-  async function verifyOTP() {
-    const otpInput = document.getElementById('otpCode').value;
-    const statusText = document.getElementById('status');
-
-    if (!otpInput) {
-      statusText.innerText = "❌ Please enter the OTP!";
-      statusText.style.color = "red";
-      return;
-    }
-
-    statusText.innerText = "⏳ Verifying...";
-    statusText.style.color = "blue";
-
-    try {
-      const response = await fetch(`${apiUrl}/verify-otp`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contact_id: currentContactId, otp: otpInput })
-      });
-      const result = await response.json();
-      
-      if(result.success) {
-        statusText.innerText = "🎉 Login Successful! Welcome.";
-        statusText.style.color = "green";
-        // লগইন সফল হলে ড্যাশবোর্ডে নিয়ে যাওয়ার কোড এখানে হবে
-      } else {
-        statusText.innerText = "❌ " + result.error;
-        statusText.style.color = "red";
-      }
-    } catch (error) { statusText.innerText = "❌ System Error!"; statusText.style.color = "red"; }
-  }
-</script>
+    </script>
 
 </body>
 </html>
